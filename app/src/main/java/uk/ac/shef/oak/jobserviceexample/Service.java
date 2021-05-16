@@ -5,8 +5,11 @@
 package uk.ac.shef.oak.jobserviceexample;
 
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
@@ -49,7 +52,6 @@ public class Service extends android.app.Service {
         Log.i("foundLog", String.valueOf(found));
 
         // it has been killed by Android and now it is restarted. We must make sure to have reinitialised everything
-
         if (intent == null) {
             ProcessMainClass bck = new ProcessMainClass();
             bck.launchService(this);
@@ -62,7 +64,6 @@ public class Service extends android.app.Service {
         }
 
         startTimer();
-
         // return start sticky so if it is killed by android, it will be restarted with Intent null
         return START_STICKY;
     }
@@ -144,11 +145,11 @@ public class Service extends android.app.Service {
         timer = new Timer();
 
         //initialize the TimerTask's job
-        initializeTimerTask();
-
+        //initializeTimerTask();
+        initializePingTimer();
         Log.i(TAG, "Scheduling...");
-        //schedule the timer, to wake up every 1 second
-        timer.schedule(timerTask, 1000, 1000); //
+        //schedule the timer, to wake up every 10 minutes
+        timer.schedule(timerTask, 1000, 600000);
     }
 
     /**
@@ -167,6 +168,7 @@ public class Service extends android.app.Service {
                 } catch (NullPointerException e) {
                     Log.e("ExceptionTag", "error saving: are you testing?" + e.getMessage());
                 }
+
             }
         };
     }
@@ -190,5 +192,21 @@ public class Service extends android.app.Service {
         Service.mCurrentService = mCurrentService;
     }
 
+    public void initializePingTimer() {
+        Log.i(TAG, "initialising PingTimerTask");
+        timerTask = new TimerTask() {
+            public void run() {
+                // Check if the connection is OK!
+                ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+                if (networkInfo != null && networkInfo.isConnected()) {
+                    new FetchBackend().execute();
+                } else {
+                    Log.i("ErrorFetch", "There has been an issue with the connection");
+                }
+
+            }
+        };
+    }
 
 }
