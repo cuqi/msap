@@ -46,10 +46,10 @@ public class Service extends android.app.Service {
         super.onStartCommand(intent, flags, startId);
         Log.d(TAG, "restarting Service !!");
 //        counter = 0;
-        SharedPreferences prefs = this.getSharedPreferences("continueCounter", this.MODE_PRIVATE);
-        int found = prefs.getInt("counter", 0);
-        counter = found;
-        Log.i("foundLog", String.valueOf(found));
+//        SharedPreferences prefs = this.getSharedPreferences("continueCounter", this.MODE_PRIVATE);
+//        int found = prefs.getInt("counter", 0);
+//        counter = found;
+//        Log.i("foundLog", String.valueOf(found));
 
         // it has been killed by Android and now it is restarted. We must make sure to have reinitialised everything
         if (intent == null) {

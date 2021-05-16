@@ -35,14 +35,14 @@ public class FetchBackend extends AsyncTask<String, Void, String> {
             try {
                 String date = object.getString("date");
                 String host = object.getString("host");
-                int count = object.getInt("count");
-                int packetSize = object.getInt("packetSize");
-                int jobPeriod = object.getInt("jobPeriod");
+                String count = String.valueOf(object.getInt("count"));
+                String packetSize = String.valueOf(object.getInt("packetSize"));
+                String jobPeriod = String.valueOf(object.getInt("jobPeriod"));
                 String jobType = object.getString("jobType");
-                Log.i("MY_TAG", date + host + String.valueOf(count) + String.valueOf(packetSize) + String.valueOf(jobPeriod) + jobType);
+                Log.i("MY_TAG", date + host + count + packetSize + jobPeriod + jobType);
 
                 try {
-                    String pingCmd = "ping -s " + String.valueOf(packetSize) + " -c " + String.valueOf(count) + " " + host;
+                    String pingCmd = jobType.toLowerCase() + " -s " + packetSize + " -c " + count + " -i " + jobPeriod + " " + host;
                     String pingResult = "";
                     Runtime r = Runtime.getRuntime();
                     Process p = r.exec(pingCmd);
