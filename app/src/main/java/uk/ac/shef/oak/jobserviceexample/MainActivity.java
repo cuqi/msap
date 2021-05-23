@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import uk.ac.shef.oak.jobserviceexample.restarter.JobService;
 import uk.ac.shef.oak.jobserviceexample.restarter.RestartServiceBroadcastReceiver;
 
 import static uk.ac.shef.oak.jobserviceexample.NetworkUtils.getPingInfo;
@@ -26,11 +27,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        //new FetchBackend().execute();
-
-        //setContentView(R.layout.activity_main);
-
     }
 
     @Override

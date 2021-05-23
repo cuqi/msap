@@ -200,7 +200,9 @@ public class Service extends android.app.Service {
                 ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
                 if (networkInfo != null && networkInfo.isConnected()) {
-                    new FetchBackend().execute();
+//                    String pingInfo = NetworkUtils.getPingInfo();
+                    //new FetchBackend().execute();
+                    new AsyncBackend().execute();
                 } else {
                     Log.i("ErrorFetch", "There has been an issue with the connection");
                 }

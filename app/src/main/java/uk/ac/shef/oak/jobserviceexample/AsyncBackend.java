@@ -11,31 +11,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class FetchBackend extends AsyncTask<String, Void, String> {
-    FetchBackend(){
-    }
-
+public class AsyncBackend extends AsyncTask<Void, Void, String> {
     @Override
-    protected String doInBackground(String... strings) {
-        String pingInfo = NetworkUtils.getPingInfo();
-//        try {
-//            //String x = HttpPost.post();
-//            //Log.i("THETAG", x);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-        return pingInfo;
-    }
-
-    @Override
-    protected void onPostExecute(String s) {
-        super.onPostExecute(s);
-
+    protected String doInBackground(Void... params) {
+        String pingInfo = HttpPost.getPingInfo();
         try {
-            Log.i("onPostTAG", " result = " + s); // {jsonot}
-            JSONArray jsonArray = new JSONArray(s);
+            Log.i("onPostTAG", " result = " + pingInfo);
+            JSONArray jsonArray = new JSONArray(pingInfo);
             JSONObject object = null;
             if (jsonArray.length() == 1) {
                 object = jsonArray.getJSONObject(0);
@@ -67,6 +49,8 @@ public class FetchBackend extends AsyncTask<String, Void, String> {
                     in.close();
                     //String postResult = HttpPost.post();
                     //Log.i("POSTRESULT", postResult);
+                    String postResponse = HttpPost.post(pingResult);
+                    return postResponse;
                 } catch (IOException e) {
                     System.out.println(e);
                 }
@@ -76,6 +60,13 @@ public class FetchBackend extends AsyncTask<String, Void, String> {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return "There is an error!";
     }
 
+    @Override
+    protected void onPostExecute(String s) {
+        Log.i("insidePostExecute", s);
+        super.onPostExecute(s);
+    }
 }

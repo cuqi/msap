@@ -1,30 +1,36 @@
 package uk.ac.shef.oak.jobserviceexample;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.os.Build;
 import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.spi.FileSystemProvider;
+import java.util.ArrayList;
+import java.util.List;
 
-public class NetworkUtils {
-    //private static final String LOG_TAG = NetworkUtils.class.getSimpleName();
+import static android.content.Context.MODE_PRIVATE;
+
+public class HttpPost {
     private static final String BACKEND_BASE_URL_EMULATOR = "http://10.0.2.2:5000/getjobs/emulator";
     private static final String BACKEND_BASE_URL_HARDWARE = "http://192.168.100.7:5000/getjobs/hardware";
     private static final String BACKEND_BASE_URL_POST_EMULATOR = "http://10.0.2.2:5000/postresults";
     private static final String BACKEND_BASE_URL_POST_HARDWARE = "http://192.168.100.7:5000/postresults";
+    private static Context context;
 
+    public HttpPost (Context context) {
+        this.context = context;
+    }
     public static int checkDevice() {
         if (Build.FINGERPRINT.startsWith("google/sdk_gphone_")
                 && Build.FINGERPRINT.endsWith(":user/release-keys")
@@ -43,6 +49,63 @@ public class NetworkUtils {
             return 2;
         }
     }
+
+    public static String post(String ping) throws IOException, JSONException {
+        HttpURLConnection urlConnection = null;
+        URL requestUrl = null;
+        int x = checkDevice();
+        if (x == 1) {
+            requestUrl = new URL(BACKEND_BASE_URL_POST_EMULATOR);
+        } else if (x == 2) {
+            requestUrl = new URL(BACKEND_BASE_URL_POST_HARDWARE);
+        }
+        urlConnection = (HttpURLConnection) requestUrl.openConnection();
+        urlConnection.setRequestMethod("POST");
+        urlConnection.setRequestProperty("Content-Type", "application/json; utf-8");
+        urlConnection.setRequestProperty("Accept", "text/plain; charset=utf-8");
+        urlConnection.setDoOutput(true);
+
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("result", ping);
+        try (OutputStream os = urlConnection.getOutputStream()) {
+            byte[] input = jsonObject.toString().getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
+        int responseCode = urlConnection.getResponseCode();
+        Log.i("responseCodeTag", String.valueOf(responseCode));
+        List<String> badPings = new ArrayList();
+
+
+//        SharedPreferences prefs = context.getSharedPreferences("connection-down", MODE_PRIVATE);
+//        SharedPreferences.Editor editor = prefs.edit();
+
+       if (responseCode == HttpURLConnection.HTTP_OK) {
+            //String badPing = prefs.getString("keep-ping", "");
+            //String[] allBadPings = badPing.split(";");
+            //if (allBadPings.length == 0) {
+                try (BufferedReader br = new BufferedReader(
+                        new InputStreamReader(urlConnection.getInputStream(), "utf-8"))) {
+                    StringBuilder response = new StringBuilder();
+                    String responseLine = null;
+                    while ((responseLine = br.readLine()) != null) {
+                        response.append(responseLine.trim());
+                    }
+
+                    return response.toString();
+                }
+            //} else {
+
+            }
+//        } else {
+//            badPings.add(ping);
+//            editor.putString("keep-ping", ping + ";");
+//            editor.apply();
+//        }
+
+        return "NOK";
+    }
+
     public static String getPingInfo() {
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
@@ -95,46 +158,5 @@ public class NetworkUtils {
             }
         }
         return pingJSONString;
-    }
-
-    static String postPingInfo(String ping) throws IOException, JSONException{
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
-        URL requestUrl = null;
-        int x = checkDevice();
-        Log.i("checkdeviceresult", String.valueOf(x));
-        String result = "";
-        if (x == 1) {
-            requestUrl = new URL(BACKEND_BASE_URL_POST_EMULATOR);
-        } else if (x == 2) {
-            requestUrl = new URL(BACKEND_BASE_URL_POST_HARDWARE);
-        }
-        Log.i("requsturl", requestUrl.toString());
-        urlConnection = (HttpURLConnection) requestUrl.openConnection();
-        urlConnection.setRequestMethod("POST");
-        urlConnection.setRequestProperty("Content-Type", "application/json; utf-8");
-        urlConnection.setRequestProperty("Accept", "text/plain; charset=utf-8");
-        urlConnection.setDoOutput(true);
-
-        if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("result", "test");
-            try (OutputStream os = urlConnection.getOutputStream()) {
-                byte[] input = jsonObject.toString().getBytes("utf-8");
-                os.write(input, 0, input.length);
-            }
-            try (BufferedReader br = new BufferedReader(
-                    new InputStreamReader(urlConnection.getInputStream(), "utf-8"))) {
-                StringBuilder response = new StringBuilder();
-                String responseLine = null;
-                while ((responseLine = br.readLine()) != null) {
-                    response.append(responseLine.trim());
-                }
-                return response.toString();
-            }
-        }
-        else {
-            return "NOT OK";
-        }
     }
 }
